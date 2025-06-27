@@ -17,19 +17,37 @@ public class MaximumSubarraySumII {
             prefix[i] = prefix[i - 1] + Long.parseLong(st.nextToken());
         }
         
-        TreeSet<Long> set = new TreeSet<>();
-        set.add(0L);
+        // Using TreeMap to handle duplicate prefix sums
+        TreeMap<Long, Integer> map = new TreeMap<>();
+        map.put(0L, 1); // Initialize with prefix[0]
         
-        long max = Long.MIN_VALUE;
+        long maxSum = Long.MIN_VALUE;
+        
         for (int i = a; i <= n; i++) {
-            if (i > b) {
-                set.remove(prefix[i - b - 1]);
+            // Remove elements that are outside the window when i > b
+            if (i > b && map.containsKey(prefix[i - b - 1])) {
+                int cnt = map.get(prefix[i - b - 1]);
+                if (cnt == 1) {
+                    map.remove(prefix[i - b - 1]);
+                } else {
+                    map.put(prefix[i - b - 1], cnt - 1);
+                }
             }
-            max = Math.max(max, prefix[i] - set.first());
-            set.add(prefix[i - a + 1]);
+            
+            // Get the minimum prefix sum in the current window
+            if (!map.isEmpty()) {
+                long minPrefix = map.firstKey();
+                maxSum = Math.max(maxSum, prefix[i] - minPrefix);
+            }
+            
+            // Add the current prefix sum to the map (for next windows)
+            if (i - a + 1 >= 0) {
+                long currentPrefix = prefix[i - a + 1];
+                map.put(currentPrefix, map.getOrDefault(currentPrefix, 0) + 1);
+            }
         }
         
-        pw.println(max);
+        pw.println(maxSum);
         pw.flush();
     }
 }
